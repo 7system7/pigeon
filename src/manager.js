@@ -140,7 +140,7 @@ export class Manager {
             return;
         }
 
-        account.cleanupNotifiedIds();
+        account.clearNotificationHistory();
         account.destroy();
 
         this._accounts = this._accounts.filter((acc) => acc !== account);

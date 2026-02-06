@@ -20,8 +20,7 @@ export class Account {
         this._logger = logger;
 
         this.mailbox = goaAccount.get_account().presentation_identity;
-        this._providerType = goaAccount.get_account().provider_type;
-        this._provider = providers[this._providerType];
+        this._provider = providers[goaAccount.get_account().provider_type];
         this._source = null;
         this._errorNotified = false;
     }
@@ -79,21 +78,23 @@ export class Account {
     }
 
     _processNewMessages(messages) {
+        const history = this._loadNotificationHistory();
         const currentIds = new Set(messages.map((m) => m.id));
-        const storedIds = this._loadNotifiedIds()[this.mailbox] || [];
+        const previousIds = history[this.mailbox] || [];
 
         // Keep only IDs that are still in the current inbox
-        const notifiedIds = new Set(storedIds.filter((id) => currentIds.has(id)));
+        const seenIds = new Set(previousIds.filter((id) => currentIds.has(id)));
 
         // Oldest first so newest appear on top in notification stack
-        const newMessages = [...messages].reverse().filter((msg) => !notifiedIds.has(msg.id));
+        const newMessages = [...messages].reverse().filter((msg) => !seenIds.has(msg.id));
 
         for (const msg of newMessages) {
-            notifiedIds.add(msg.id);
+            seenIds.add(msg.id);
             this._showNotification(msg);
         }
 
-        this._saveNotifiedIds([...notifiedIds]);
+        history[this.mailbox] = [...seenIds];
+        this._settings.set_string('notified-ids', JSON.stringify(history));
     }
 
     _showNotification(msg) {
@@ -151,7 +152,7 @@ export class Account {
         Gio.AppInfo.launch_default_for_uri(link || this._provider.getFallbackURL(), null);
     }
 
-    _loadNotifiedIds() {
+    _loadNotificationHistory() {
         try {
             const json = this._settings.get_string('notified-ids');
             return JSON.parse(json || '{}');
@@ -161,17 +162,11 @@ export class Account {
         }
     }
 
-    _saveNotifiedIds(ids) {
-        const data = this._loadNotifiedIds();
-        data[this.mailbox] = ids;
-        this._settings.set_string('notified-ids', JSON.stringify(data));
-    }
-
-    cleanupNotifiedIds() {
-        const data = this._loadNotifiedIds();
-        if (this.mailbox in data) {
-            delete data[this.mailbox];
-            this._settings.set_string('notified-ids', JSON.stringify(data));
+    clearNotificationHistory() {
+        const history = this._loadNotificationHistory();
+        if (this.mailbox in history) {
+            delete history[this.mailbox];
+            this._settings.set_string('notified-ids', JSON.stringify(history));
         }
     }
 }
