@@ -70,6 +70,8 @@ export class Manager {
             account.destroy();
         }
 
+        this._httpSession.abort();
+
         this._settings = null;
         this._goaClient = null;
         this._httpSession = null;
