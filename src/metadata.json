@@ -2,7 +2,7 @@
   "name": "Pigeon Email Notifier",
   "description": "Gmail and Microsoft email notifier using GNOME Online Accounts",
   "shell-version": ["48", "49"],
-  "version-name": "49.1",
+  "version-name": "49.2",
   "url": "https://github.com/subz69/pigeon",
   "uuid": "pigeon@subz69.github",
   "settings-schema": "org.gnome.shell.extensions.pigeon",
