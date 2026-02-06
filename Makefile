@@ -4,7 +4,10 @@ PO_FILES = $(wildcard po/*.po)
 LANGUAGES = $(patsubst po/%.po,%,$(PO_FILES))
 JS_FILES = $(wildcard src/*.js)
 
-.PHONY: all install uninstall po new-po clean help
+VERSION = $(shell grep -o '"version-name": *"[^"]*"' src/metadata.json | cut -d'"' -f4)
+ZIP = $(UUID).shell-extension.zip
+
+.PHONY: all install uninstall po new-po release clean help
 
 all:
 	@gnome-extensions pack --force --podir=../po --extra-source=manager.js --extra-source=account.js --extra-source=providers.js src
@@ -25,7 +28,7 @@ po:
 	done
 
 install: all
-	@gnome-extensions install $(UUID).shell-extension.zip --force
+	@gnome-extensions install $(ZIP) --force
 	@$(MAKE) --no-print-directory clean
 	@echo "Done, restart GNOME Shell to apply changes."
 
@@ -39,8 +42,13 @@ ifndef LANG
 endif
 	@msginit --input=$(POT_FILE) --output=po/$(LANG).po --locale=$(LANG) --no-translator
 
+release: all
+	@gh release create v$(VERSION) $(ZIP) --title "v$(VERSION)" --generate-notes
+	@$(MAKE) --no-print-directory clean
+	@echo "Released v$(VERSION)"
+
 clean:
-	@rm -f $(UUID).shell-extension.zip
+	@rm -f $(ZIP)
 
 help:
 	@echo "Makefile targets:"
@@ -50,4 +58,5 @@ help:
 	@echo "  make uninstall       Remove installed extension"
 	@echo "  make po              Update translations"
 	@echo "  make new-po LANG=xx  Create new translation (e.g., LANG=it)"
+	@echo "  make release         Create GitHub release with zip"
 	@echo "  make clean           Clean generated package"
