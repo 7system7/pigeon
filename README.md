@@ -60,6 +60,26 @@ Please [open an issue](https://github.com/subz69/pigeon/issues) with the relevan
 journalctl --grep="pigeon"
 ```
 
+## Contributing
+
+### Translations
+
+Pigeon supports internationalization. To add a new translation:
+
+1. Generate a new translation template:
+   ```bash
+   make new-po LANG=xx  # Replace 'xx' with your language code (e.g., ja, nl, ru)
+   ```
+
+2. Edit the generated `po/xx.po` file with your translations
+
+3. Test your translation:
+   ```bash
+   make install
+   ```
+
+4. Submit a pull request with your `po/xx.po` file
+
 ## Credits
 
 Based on [gnome-email-notifications](https://github.com/shumingch/gnome-email-notifications) by Shuming Chan, Stuart Langridge and Adam Jablonski. Complete rewrite for GNOME Shell 48+.
