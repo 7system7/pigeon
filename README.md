@@ -30,7 +30,7 @@ A GNOME Shell extension for email notifications using GNOME Online Accounts.
 
 ### From extensions.gnome.org
 
-*Planned*
+[<img src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg?sanitize=true" alt="Get it on GNOME Extensions" height="100">](https://extensions.gnome.org/extension/9301/pigeon-email-notifier/)
 
 ### Manual
 
