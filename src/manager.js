@@ -69,6 +69,11 @@ export class Manager {
         for (const account of this._accounts) {
             account.destroy();
         }
+
+        this._settings = null;
+        this._goaClient = null;
+        this._httpSession = null;
+        this._cancellable = null;
     }
 
     get _accountOptions() {
