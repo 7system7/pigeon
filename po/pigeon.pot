@@ -1,0 +1,82 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the pigeon@subz69.github package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: pigeon@subz69.github\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-02-05 18:58+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: src/account.js
+msgid "Unable to check emails"
+msgstr ""
+
+#: src/manager.js
+msgid "Error loading email accounts"
+msgstr ""
+
+#: src/prefs.js
+msgid "Notifications"
+msgstr ""
+
+#: src/prefs.js
+msgid "Configure notification behavior"
+msgstr ""
+
+#: src/prefs.js
+msgid "Priority only"
+msgstr ""
+
+#: src/prefs.js
+msgid "Only notify for important emails"
+msgstr ""
+
+#: src/prefs.js
+msgid "Check interval"
+msgstr ""
+
+#: src/prefs.js
+msgid "Time in seconds between email checks"
+msgstr ""
+
+#: src/prefs.js
+msgid "Play sound"
+msgstr ""
+
+#: src/prefs.js
+msgid "Play a notification sound when new emails arrive"
+msgstr ""
+
+#: src/prefs.js
+msgid "Persistent notifications"
+msgstr ""
+
+#: src/prefs.js
+msgid "Keep notifications visible until dismissed"
+msgstr ""
+
+#: src/prefs.js
+msgid "Email Client"
+msgstr ""
+
+#: src/prefs.js
+msgid "Configure how to open emails"
+msgstr ""
+
+#: src/prefs.js
+msgid "Use default email client"
+msgstr ""
+
+#: src/prefs.js
+msgid "Launch mail client when clicking notifications"
+msgstr ""

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schemalist gettext-domain="pigeon@subz69.github">
+    <schema
+        path="/org/gnome/shell/extensions/pigeon/"
+        id="org.gnome.shell.extensions.pigeon"
+    >
+        <key type="b" name="priority-only">
+            <default>false</default>
+            <summary>Only notify for important emails</summary>
+            <description
+            >Filter notifications to only show emails marked as important (Gmail) or focused (Outlook)</description>
+        </key>
+        <key type="b" name="use-mail-client">
+            <default>false</default>
+            <summary>Use default email client instead of browser</summary>
+            <description
+            >Use default email client instead of browser.</description>
+        </key>
+        <key type="i" name="check-interval">
+            <range min="60" max="1800" />
+            <default>180</default>
+            <summary>Check mail every (sec):</summary>
+            <description>Check mail every (sec):</description>
+        </key>
+        <key type="b" name="play-sound">
+            <default>false</default>
+            <summary>Play sound on new email</summary>
+            <description
+            >Play a notification sound when new emails arrive</description>
+        </key>
+        <key type="b" name="persistent-notifications">
+            <default>false</default>
+            <summary>Keep notifications visible until dismissed</summary>
+            <description
+            >Use high urgency notifications that stay visible until manually dismissed</description>
+        </key>
+        <key type="s" name="notified-ids">
+            <default>'{}'</default>
+            <summary
+            >Stores ids of all messages shown (JSON by account)</summary>
+            <description
+            >JSON object mapping account emails to arrays of message IDs already notified</description>
+        </key>
+    </schema>
+</schemalist>
