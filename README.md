@@ -19,18 +19,19 @@ A GNOME Shell extension for email notifications using GNOME Online Accounts.
 ## Limitations
 
 - Exchange and IMAP accounts are not supported
+- Microsoft (Outlook) notifications require GNOME Online Accounts ≥ 3.55. Older versions use a Microsoft API that has been decommissioned.
 
 ## Requirements
 
 - GNOME Shell 48 or later
 - A Google or Microsoft account configured in GNOME Online Accounts **Settings > Online Accounts**
-- **Ubuntu users:** `sudo apt install gir1.2-goa-1.0 gir1.2-xmlb-2.0`
+- **Debian-based distributions:** `sudo apt install gir1.2-goa-1.0 gir1.2-xmlb-2.0`  (log out and back in after installing)
 
 ## Installation
 
 ### From extensions.gnome.org
 
-[<img src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg?sanitize=true" alt="Get it on GNOME Extensions" height="100">](https://extensions.gnome.org/extension/9301/pigeon-email-notifier/)
+[Pigeon Email Notifier on EGO](https://extensions.gnome.org/extension/9301/pigeon-email-notifier/)
 
 ### Manual
 
