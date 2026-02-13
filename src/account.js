@@ -18,20 +18,20 @@ export class Account {
         this.mailbox = goaAccount.get_account().presentation_identity;
         this._provider = providers[goaAccount.get_account().provider_type];
         this._source = null;
-        this._errorNotified = false;
+        this._failCount = 0;
     }
 
     async scanInbox() {
         try {
             const messages = await this._fetchMessages();
-            this._errorNotified = false;
+            this._failCount = 0;
             this._processNewMessages(messages);
         } catch (err) {
             if (!err.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
-                this._logger.error(err);
-                if (!this._errorNotified) {
-                    Main.notifyError(this.mailbox, _('Unable to check emails'));
-                    this._errorNotified = true;
+                this._failCount++;
+                this._logger.log(`mail check failed (${this._failCount}): ${err.message}`);
+                if (this._failCount === 3) {
+                    Main.notifyError(this.mailbox, _(`Unable to check emails: ${err.message}`));
                 }
             }
         }
