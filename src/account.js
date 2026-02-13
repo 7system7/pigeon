@@ -13,7 +13,7 @@ Gio._promisify(Goa.OAuth2Based.prototype, 'call_get_access_token', 'call_get_acc
 
 export class Account {
     constructor({ goaAccount, settings, httpSession, cancellable, logger }) {
-        this._goaAccount = goaAccount;
+        this.goaAccount = goaAccount;
         this._settings = settings;
         this._httpSession = httpSession;
         this._cancellable = cancellable;
@@ -72,7 +72,7 @@ export class Account {
     }
 
     async _getAccessToken() {
-        const oauth2 = this._goaAccount.get_oauth2_based();
+        const oauth2 = this.goaAccount.get_oauth2_based();
         const [accessToken] = await oauth2.call_get_access_token(this._cancellable);
         return accessToken;
     }

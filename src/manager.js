@@ -140,17 +140,17 @@ export class Manager {
     }
 
     _onAccountRemoved(_client, goaAccount) {
-        const mailbox = goaAccount.get_account().presentation_identity;
-        const account = this._accounts.find((acc) => acc.mailbox === mailbox);
+        const index = this._accounts.findIndex((acc) => acc.goaAccount === goaAccount);
 
-        if (!account) {
+        if (index === -1) {
             return;
         }
 
+        const account = this._accounts[index];
         account.clearNotificationHistory();
         account.destroy();
 
-        this._accounts = this._accounts.filter((acc) => acc !== account);
+        this._accounts.splice(index, 1);
         if (this._accounts.length === 0) {
             this._stopTimer();
         }
