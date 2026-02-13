@@ -1,15 +1,11 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
-import Goa from 'gi://Goa';
 import Soup from 'gi://Soup';
 import { gettext as _ } from 'resource:///org/gnome/shell/extensions/extension.js';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 
 import { providers } from './providers.js';
-
-Gio._promisify(Soup.Session.prototype, 'send_and_read_async', 'send_and_read_finish');
-Gio._promisify(Goa.OAuth2Based.prototype, 'call_get_access_token', 'call_get_access_token_finish');
 
 export class Account {
     constructor({ goaAccount, settings, httpSession, cancellable, logger }) {

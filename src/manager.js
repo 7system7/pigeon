@@ -11,6 +11,8 @@ import { providers } from './providers.js';
 const SUPPORTED_PROVIDERS = new Set(Object.keys(providers));
 
 Gio._promisify(Goa.Client, 'new', 'new_finish');
+Gio._promisify(Goa.OAuth2Based.prototype, 'call_get_access_token', 'call_get_access_token_finish');
+Gio._promisify(Soup.Session.prototype, 'send_and_read_async', 'send_and_read_finish');
 
 export class Manager {
     constructor({ logger, settings }) {
