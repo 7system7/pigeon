@@ -21,6 +21,7 @@ export class Manager {
 
         this._cancellable = new Gio.Cancellable();
         this._accounts = [];
+        this._notifiedIds = this._loadNotifiedIds();
         this._httpSession = new Soup.Session();
         this._httpSession.set_timeout(10);
 
@@ -86,6 +87,7 @@ export class Manager {
             httpSession: this._httpSession,
             cancellable: this._cancellable,
             logger: this._logger,
+            notifiedIds: this._notifiedIds,
         };
     }
 
@@ -96,10 +98,9 @@ export class Manager {
             .map((goaAccount) => new Account({ goaAccount, ...this._accountOptions }));
     }
 
-    _checkAllAccounts() {
-        for (const account of this._accounts) {
-            account.scanInbox();
-        }
+    async _checkAllAccounts() {
+        await Promise.allSettled(this._accounts.map((acc) => acc.scanInbox()));
+        this._saveNotifiedIds();
     }
 
     _startTimer() {
@@ -149,12 +150,29 @@ export class Manager {
         }
 
         const account = this._accounts[index];
-        account.clearNotificationHistory();
+        this._notifiedIds.delete(account.mailbox);
         account.destroy();
+        this._saveNotifiedIds();
 
         this._accounts.splice(index, 1);
         if (this._accounts.length === 0) {
             this._stopTimer();
         }
+    }
+
+    _loadNotifiedIds() {
+        try {
+            const history = JSON.parse(this._settings.get_string('notified-ids') || '{}');
+            return new Map(Object.entries(history));
+        } catch {
+            return new Map();
+        }
+    }
+
+    _saveNotifiedIds() {
+        this._settings.set_string(
+            'notified-ids',
+            JSON.stringify(Object.fromEntries(this._notifiedIds)),
+        );
     }
 }
