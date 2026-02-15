@@ -9,7 +9,7 @@ A GNOME Shell extension for email notifications using GNOME Online Accounts.
 
 ## Features
 
-- Gmail and Microsoft support via GNOME Online Accounts
+- Gmail and Outlook support via GNOME Online Accounts
 - Desktop notifications for new emails
 - Priority-only mode for important emails (disabled by default)
 - Persistent notifications (disabled by default)
@@ -19,13 +19,16 @@ A GNOME Shell extension for email notifications using GNOME Online Accounts.
 ## Limitations
 
 - Exchange and IMAP accounts are not supported
-- Microsoft (Outlook) notifications require GNOME Online Accounts ≥ 3.55. Older versions use a Microsoft API that has been decommissioned.
+- Outlook notifications require GNOME Online Accounts ≥ 3.55. Older versions use a Microsoft API that has been decommissioned.
 
 ## Requirements
 
 - GNOME Shell 48 or later
 - A Google or Microsoft account configured in GNOME Online Accounts **Settings > Online Accounts**
-- **Debian-based distributions:** `sudo apt install gir1.2-goa-1.0 gir1.2-xmlb-2.0`  (log out and back in after installing)
+- **Debian-based:** `sudo apt install gir1.2-goa-1.0 gir1.2-xmlb-2.0`
+- **openSUSE:** `sudo zypper install typelib-1_0-Goa-1_0 typelib-1_0-Xmlb-1_0`
+- **Gentoo:** Ensure `dev-libs/libxmlb` is installed with the `introspection` USE flag
+- **Log out and back in after installing dependencies**
 
 ## Installation
 
@@ -46,7 +49,7 @@ Then restart GNOME Shell and enable the extension.
 ## Troubleshooting
 
 **No notifications appearing?**
-- Ensure you have Gmail or Microsoft accounts added in Settings > Online Accounts
+- Ensure you have a Google or Microsoft account added in Settings > Online Accounts
 - Check that accounts are enabled and authorized
 
 **Unable to check emails?**
