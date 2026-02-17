@@ -10,7 +10,7 @@ ZIP = $(UUID).shell-extension.zip
 .PHONY: all install uninstall po new-po release clean help
 
 all:
-	@gnome-extensions pack --force --podir=../po --extra-source=manager.js --extra-source=account.js --extra-source=providers.js src
+	@gnome-extensions pack --force --podir=../po --extra-source=manager.js --extra-source=account.js --extra-source=providers.js --extra-source=imap.js src
 
 po:
 	@xgettext --from-code=UTF-8 \

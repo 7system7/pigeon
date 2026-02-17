@@ -1,5 +1,7 @@
 import Xmlb from 'gi://Xmlb';
 
+import { ImapClient } from './imap.js';
+
 const googleProvider = {
     getApiURL(priorityOnly) {
         const label = priorityOnly ? '%5Eiim' : '%5Ei';
@@ -64,7 +66,40 @@ const microsoftProvider = {
     },
 };
 
+const imapProvider = {
+    // IMAP provider works differently - it needs to establish a connection
+    // and doesn't use REST API calls
+    async fetchMessages({ host, port, username, password, useTls, cancellable, logger }) {
+        const client = new ImapClient({
+            host,
+            port,
+            username,
+            password,
+            useTls,
+            cancellable,
+            logger,
+        });
+
+        try {
+            await client.connect();
+            await client.selectMailbox('INBOX');
+            const unreadIds = await client.searchUnread();
+            const messages = await client.fetchMessages(unreadIds);
+            await client.logout();
+            return messages;
+        } catch (err) {
+            await client.logout();
+            throw err;
+        }
+    },
+
+    getFallbackURL() {
+        return null; // IMAP doesn't have a web interface
+    },
+};
+
 export const providers = {
     google: googleProvider,
     ms_graph: microsoftProvider,
+    imap: imapProvider,
 };

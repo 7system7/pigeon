@@ -16,10 +16,16 @@ export class Account {
         this._logger = logger;
         this._notifiedIds = notifiedIds;
 
-        this.mailbox = goaAccount.get_account().presentation_identity;
-        this._provider = providers[goaAccount.get_account().provider_type];
+        const account = goaAccount.get_account();
+        this.mailbox = account.presentation_identity;
+        this._providerType = account.provider_type;
+        this._provider = providers[this._providerType];
         this._source = null;
         this._failCount = 0;
+
+        // Determine if this is an OAuth2 or IMAP account
+        this._isOAuth2 = !!goaAccount.get_oauth2_based();
+        this._mail = goaAccount.get_mail();
     }
 
     async scanInbox() {
@@ -46,6 +52,16 @@ export class Account {
     }
 
     async _fetchMessages() {
+        if (this._isOAuth2) {
+            return await this._fetchMessagesOAuth2();
+        } else if (this._providerType === 'imap') {
+            return await this._fetchMessagesIMAP();
+        } else {
+            throw new Error(`Unsupported provider type: ${this._providerType}`);
+        }
+    }
+
+    async _fetchMessagesOAuth2() {
         const token = await this._getAccessToken();
         const priorityOnly = this._settings.get_boolean('priority-only');
         const url = this._provider.getApiURL(priorityOnly);
@@ -66,6 +82,47 @@ export class Account {
 
         const body = new TextDecoder('utf-8').decode(bytes.get_data());
         return this._provider.parseResponse(body, this.mailbox);
+    }
+
+    async _fetchMessagesIMAP() {
+        if (!this._mail) {
+            throw new Error('IMAP account does not have Mail interface');
+        }
+
+        const host = this._mail.email_address.split('@')[1]; // Fallback if ImapHost not set
+        const imapHost = this._mail.imap_host || host;
+        const imapUserName = this._mail.imap_user_name || this._mail.email_address;
+
+        // Get password from GOA - this requires using the passwordbased interface
+        const passwordBased = this.goaAccount.get_password_based();
+        if (!passwordBased) {
+            throw new Error('IMAP account does not have password');
+        }
+
+        const [password] = await new Promise((resolve, reject) => {
+            passwordBased.call_get_password(
+                'password',
+                this._cancellable,
+                (source, result) => {
+                    try {
+                        const [password] = passwordBased.call_get_password_finish(result);
+                        resolve([password]);
+                    } catch (err) {
+                        reject(err);
+                    }
+                }
+            );
+        });
+
+        return await this._provider.fetchMessages({
+            host: imapHost,
+            port: this._mail.imap_use_ssl ? 993 : (this._mail.imap_use_tls ? 143 : 143),
+            username: imapUserName,
+            password,
+            useTls: this._mail.imap_use_ssl || this._mail.imap_use_tls,
+            cancellable: this._cancellable,
+            logger: this._logger,
+        });
     }
 
     async _getAccessToken() {
