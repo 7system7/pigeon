@@ -1,11 +1,6 @@
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
-Gio._promisify(Gio.SocketClient.prototype, 'connect_to_host_async', 'connect_to_host_finish');
-Gio._promisify(Gio.InputStream.prototype, 'read_bytes_async', 'read_bytes_finish');
-Gio._promisify(Gio.OutputStream.prototype, 'write_bytes_async', 'write_bytes_finish');
-
-
 export class ImapClient {
     constructor({ host, port = 993, username, password, useTls = true, cancellable, logger }) {
         this._host = host;

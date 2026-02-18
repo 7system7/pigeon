@@ -99,20 +99,10 @@ export class Account {
             throw new Error('IMAP account does not have password');
         }
 
-        const [password] = await new Promise((resolve, reject) => {
-            passwordBased.call_get_password(
-                'imap-password',
-                this._cancellable,
-                (source, result) => {
-                    try {
-                        const [password] = passwordBased.call_get_password_finish(result);
-                        resolve([password]);
-                    } catch (err) {
-                        reject(err);
-                    }
-                },
-            );
-        });
+        const [password] = await passwordBased.call_get_password(
+            'imap-password',
+            this._cancellable,
+        );
 
         return await this._provider.fetchMessages({
             host: imapHost,

@@ -14,6 +14,9 @@ Gio._promisify(Goa.Client, 'new', 'new_finish');
 Gio._promisify(Goa.OAuth2Based.prototype, 'call_get_access_token', 'call_get_access_token_finish');
 Gio._promisify(Goa.PasswordBased.prototype, 'call_get_password', 'call_get_password_finish');
 Gio._promisify(Soup.Session.prototype, 'send_and_read_async', 'send_and_read_finish');
+Gio._promisify(Gio.SocketClient.prototype, 'connect_to_host_async', 'connect_to_host_finish');
+Gio._promisify(Gio.InputStream.prototype, 'read_bytes_async', 'read_bytes_finish');
+Gio._promisify(Gio.OutputStream.prototype, 'write_bytes_async', 'write_bytes_finish');
 
 export class Manager {
     constructor({ logger, settings }) {
