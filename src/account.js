@@ -54,7 +54,7 @@ export class Account {
     async _fetchMessages() {
         if (this._isOAuth2) {
             return await this._fetchMessagesOAuth2();
-        } else if (this._providerType === 'imap') {
+        } else if (this._providerType === 'imap_smtp') {
             return await this._fetchMessagesIMAP();
         } else {
             throw new Error(`Unsupported provider type: ${this._providerType}`);
@@ -101,7 +101,7 @@ export class Account {
 
         const [password] = await new Promise((resolve, reject) => {
             passwordBased.call_get_password(
-                'password',
+                'imap-password',
                 this._cancellable,
                 (source, result) => {
                     try {
@@ -110,13 +110,13 @@ export class Account {
                     } catch (err) {
                         reject(err);
                     }
-                }
+                },
             );
         });
 
         return await this._provider.fetchMessages({
             host: imapHost,
-            port: this._mail.imap_use_ssl ? 993 : (this._mail.imap_use_tls ? 143 : 143),
+            port: this._mail.imap_use_ssl ? 993 : this._mail.imap_use_tls ? 143 : 143,
             username: imapUserName,
             password,
             useTls: this._mail.imap_use_ssl || this._mail.imap_use_tls,

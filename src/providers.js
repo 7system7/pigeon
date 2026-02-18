@@ -101,5 +101,5 @@ const imapProvider = {
 export const providers = {
     google: googleProvider,
     ms_graph: microsoftProvider,
-    imap: imapProvider,
+    imap_smtp: imapProvider,
 };
