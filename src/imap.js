@@ -182,15 +182,56 @@ export class ImapClient {
         return messages;
     }
 
+    _unfoldHeaders(raw) {
+        return raw.replace(/\r?\n[ \t]/g, ' ');
+    }
+
+    _decodeMimeWord(encoded) {
+        try {
+            const match = encoded.match(/=\?([^?]+)\?([BbQq])\?([^?]*)\?=/);
+            if (!match) return encoded;
+
+            const [, charset, encoding, data] = match;
+
+            if (encoding.toUpperCase() === 'B') {
+                const bytes = GLib.base64_decode(data);
+                return new TextDecoder(charset).decode(bytes);
+            }
+
+            if (encoding.toUpperCase() === 'Q') {
+                const decoded = data
+                    .replace(/_/g, ' ')
+                    .replace(/=([0-9A-Fa-f]{2})/g, (_, hex) =>
+                        String.fromCharCode(parseInt(hex, 16)),
+                    );
+                return new TextDecoder(charset).decode(
+                    new Uint8Array([...decoded].map((c) => c.charCodeAt(0))),
+                );
+            }
+
+            return encoded;
+        } catch {
+            return encoded;
+        }
+    }
+
+    _decodeMime(str) {
+        if (!str) return str;
+        return str
+            .replace(/\?=\s+=\?/g, '?==?')
+            .replace(/=\?[^?]+\?[BbQq]\?[^?]*\?=/g, (match) => this._decodeMimeWord(match));
+    }
+
     _parseHeaders(seqNum, headers) {
-        const fromMatch = headers.match(/From: (.+)/i);
-        const subjectMatch = headers.match(/Subject: (.+)/i);
-        const messageIdMatch = headers.match(/Message-ID: <(.+?)>/i);
+        const unfolded = this._unfoldHeaders(headers);
+        const fromMatch = unfolded.match(/From: (.+)/i);
+        const subjectMatch = unfolded.match(/Subject: (.+)/i);
+        const messageIdMatch = unfolded.match(/Message-ID: <(.+?)>/i);
 
         return {
             id: messageIdMatch ? messageIdMatch[1] : `msg_${seqNum}`,
-            subject: subjectMatch ? subjectMatch[1].trim() : '(No subject)',
-            from: fromMatch ? fromMatch[1].trim() : '(Unknown sender)',
+            subject: this._decodeMime(subjectMatch ? subjectMatch[1].trim() : '(No subject)'),
+            from: this._decodeMime(fromMatch ? fromMatch[1].trim() : '(Unknown sender)'),
             link: null,
         };
     }
