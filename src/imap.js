@@ -19,6 +19,7 @@ export class ImapClient {
 
     async connect() {
         const client = new Gio.SocketClient();
+        client.set_timeout(10);
 
         if (this._useTls) {
             client.set_tls(true);
@@ -40,8 +41,14 @@ export class ImapClient {
         await this._login();
     }
 
+    _quoteString(str) {
+        return '"' + str.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+    }
+
     async _login() {
-        const response = await this._sendCommand('LOGIN', `"${this._username}" "${this._password}"`);
+        const user = this._quoteString(this._username);
+        const pass = this._quoteString(this._password);
+        const response = await this._sendCommand('LOGIN', `${user} ${pass}`);
         if (!response.includes('OK')) {
             throw new Error('IMAP login failed');
         }

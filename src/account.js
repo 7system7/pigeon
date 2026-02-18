@@ -89,8 +89,11 @@ export class Account {
             throw new Error('IMAP account does not have Mail interface');
         }
 
-        const host = this._mail.email_address.split('@')[1]; // Fallback if ImapHost not set
-        const imapHost = this._mail.imap_host || host;
+        if (!this._mail.imap_host) {
+            throw new Error('IMAP account is missing imap_host configuration');
+        }
+
+        const imapHost = this._mail.imap_host;
         const imapUserName = this._mail.imap_user_name || this._mail.email_address;
 
         // Get password from GOA - this requires using the passwordbased interface
