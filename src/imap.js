@@ -72,12 +72,13 @@ export class ImapClient {
         return match[1].trim().split(' ').filter(id => id);
     }
 
-    async fetchMessages(messageIds) {
+    async fetchMessages(messageIds, limit = 10) {
         if (messageIds.length === 0) {
             return [];
         }
 
-        const idRange = messageIds.join(',');
+        const limited = messageIds.slice(-limit);
+        const idRange = limited.join(',');
         const response = await this._sendCommand(
             'FETCH',
             `${idRange} (UID BODY.PEEK[HEADER.FIELDS (FROM SUBJECT MESSAGE-ID)])`
@@ -161,14 +162,17 @@ export class ImapClient {
         const lines = response.split('\n');
         let currentMessage = null;
         let currentHeaders = '';
+        let currentUid = null;
 
         for (const line of lines) {
             const fetchMatch = line.match(/\* (\d+) FETCH/);
             if (fetchMatch) {
                 if (currentMessage && currentHeaders) {
-                    messages.push(this._parseHeaders(currentMessage, currentHeaders));
+                    messages.push(this._parseHeaders(currentUid || currentMessage, currentHeaders));
                 }
                 currentMessage = fetchMatch[1];
+                const uidMatch = line.match(/UID (\d+)/);
+                currentUid = uidMatch ? uidMatch[1] : null;
                 currentHeaders = '';
             } else if (currentMessage) {
                 currentHeaders += line + '\n';
@@ -176,7 +180,7 @@ export class ImapClient {
         }
 
         if (currentMessage && currentHeaders) {
-            messages.push(this._parseHeaders(currentMessage, currentHeaders));
+            messages.push(this._parseHeaders(currentUid || currentMessage, currentHeaders));
         }
 
         return messages;
@@ -222,14 +226,14 @@ export class ImapClient {
             .replace(/=\?[^?]+\?[BbQq]\?[^?]*\?=/g, (match) => this._decodeMimeWord(match));
     }
 
-    _parseHeaders(seqNum, headers) {
+    _parseHeaders(uid, headers) {
         const unfolded = this._unfoldHeaders(headers);
         const fromMatch = unfolded.match(/From: (.+)/i);
         const subjectMatch = unfolded.match(/Subject: (.+)/i);
         const messageIdMatch = unfolded.match(/Message-ID: <(.+?)>/i);
 
         return {
-            id: messageIdMatch ? messageIdMatch[1] : `msg_${seqNum}`,
+            id: messageIdMatch ? messageIdMatch[1] : `uid_${uid}`,
             subject: this._decodeMime(subjectMatch ? subjectMatch[1].trim() : '(No subject)'),
             from: this._decodeMime(fromMatch ? fromMatch[1].trim() : '(Unknown sender)'),
             link: null,
