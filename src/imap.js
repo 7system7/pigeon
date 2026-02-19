@@ -34,10 +34,8 @@ export class ImapClient {
         this._input = this._connection.get_input_stream();
         this._output = this._connection.get_output_stream();
 
-        // Read greeting
         await this._readResponse();
 
-        // Login
         await this._login();
     }
 
@@ -114,8 +112,6 @@ export class ImapClient {
     }
 
     async _readResponse(tag = null) {
-        let response = '';
-
         while (true) {
             const bytes = await this._input.read_bytes_async(
                 4096,
@@ -127,11 +123,8 @@ export class ImapClient {
                 break;
             }
 
-            const chunk = new TextDecoder('utf-8').decode(bytes.get_data());
-            this._buffer += chunk;
-            response += chunk;
+            this._buffer += new TextDecoder('utf-8').decode(bytes.get_data());
 
-            // Check if we have a complete response
             if (tag) {
                 if (this._buffer.includes(`${tag} OK`) || this._buffer.includes(`${tag} NO`) || this._buffer.includes(`${tag} BAD`)) {
                     const result = this._buffer;
@@ -139,7 +132,6 @@ export class ImapClient {
                     return result;
                 }
             } else {
-                // For untagged responses (like greeting)
                 if (this._buffer.includes('\r\n')) {
                     const result = this._buffer;
                     this._buffer = '';
@@ -147,14 +139,9 @@ export class ImapClient {
                 }
             }
 
-            // Add small delay to allow more data to arrive
-            await new Promise(resolve => GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
-                resolve();
-                return GLib.SOURCE_REMOVE;
-            }));
         }
 
-        return response;
+        return this._buffer;
     }
 
     _parseMessages(response) {

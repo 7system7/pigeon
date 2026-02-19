@@ -23,8 +23,6 @@ export class Account {
         this._source = null;
         this._failCount = 0;
 
-        // Determine if this is an OAuth2 or IMAP account
-        this._isOAuth2 = !!goaAccount.get_oauth2_based();
         this._mail = goaAccount.get_mail();
     }
 
@@ -52,13 +50,10 @@ export class Account {
     }
 
     async _fetchMessages() {
-        if (this._isOAuth2) {
-            return await this._fetchMessagesOAuth2();
-        } else if (this._providerType === 'imap_smtp') {
+        if (this._providerType === 'imap_smtp') {
             return await this._fetchMessagesIMAP();
-        } else {
-            throw new Error(`Unsupported provider type: ${this._providerType}`);
         }
+        return await this._fetchMessagesOAuth2();
     }
 
     async _fetchMessagesOAuth2() {
@@ -96,7 +91,6 @@ export class Account {
         const imapHost = this._mail.imap_host;
         const imapUserName = this._mail.imap_user_name || this._mail.email_address;
 
-        // Get password from GOA - this requires using the passwordbased interface
         const passwordBased = this.goaAccount.get_password_based();
         if (!passwordBased) {
             throw new Error('IMAP account does not have password');

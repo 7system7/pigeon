@@ -98,21 +98,7 @@ export class Manager {
     _createAccounts() {
         return this._goaClient
             .get_accounts()
-            .filter((goaAccount) => {
-                const providerType = goaAccount.get_account().provider_type;
-
-                // Check if provider type is supported
-                if (!SUPPORTED_PROVIDERS.has(providerType)) {
-                    return false;
-                }
-
-                // For IMAP accounts, ensure they have the Mail interface
-                if (providerType === 'imap') {
-                    return !!goaAccount.get_mail();
-                }
-
-                return true;
-            })
+            .filter((acc) => SUPPORTED_PROVIDERS.has(acc.get_account().provider_type))
             .map((goaAccount) => new Account({ goaAccount, ...this._accountOptions }));
     }
 
