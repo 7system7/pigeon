@@ -67,13 +67,13 @@ const microsoftProvider = {
 };
 
 const imapProvider = {
-    async fetchMessages({ host, port, username, password, useTls, cancellable, logger }) {
+    async fetchMessages({ host, port, username, password, useStartTls, cancellable, logger }) {
         const client = new ImapClient({
             host,
             port,
             username,
             password,
-            useTls,
+            useStartTls,
             cancellable,
             logger,
         });

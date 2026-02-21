@@ -88,7 +88,15 @@ export class Account {
             throw new Error('IMAP account is missing imap_host configuration');
         }
 
-        const imapHost = this._mail.imap_host;
+        if (!this._mail.imap_use_ssl && !this._mail.imap_use_tls) {
+            throw new Error('IMAP requires SSL/TLS or STARTTLS');
+        }
+
+        const useStartTls = !this._mail.imap_use_ssl && this._mail.imap_use_tls;
+        const defaultPort = useStartTls ? 143 : 993;
+
+        const [host, portStr] = this._mail.imap_host.split(':');
+        const port = portStr ? parseInt(portStr, 10) : defaultPort;
         const imapUserName = this._mail.imap_user_name || this._mail.email_address;
 
         const passwordBased = this.goaAccount.get_password_based();
@@ -102,11 +110,11 @@ export class Account {
         );
 
         return await this._provider.fetchMessages({
-            host: imapHost,
-            port: this._mail.imap_use_ssl ? 993 : this._mail.imap_use_tls ? 143 : 143,
+            host,
+            port,
             username: imapUserName,
             password,
-            useTls: this._mail.imap_use_ssl || this._mail.imap_use_tls,
+            useStartTls,
             cancellable: this._cancellable,
             logger: this._logger,
         });

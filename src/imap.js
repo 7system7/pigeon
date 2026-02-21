@@ -2,12 +2,12 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 export class ImapClient {
-    constructor({ host, port = 993, username, password, useTls = true, cancellable, logger }) {
+    constructor({ host, port, username, password, useStartTls = false, cancellable, logger }) {
         this._host = host;
         this._port = port;
         this._username = username;
         this._password = password;
-        this._useTls = useTls;
+        this._useStartTls = useStartTls;
         this._cancellable = cancellable;
         this._logger = logger;
         this._connection = null;
@@ -21,22 +21,47 @@ export class ImapClient {
         const client = new Gio.SocketClient();
         client.set_timeout(10);
 
-        if (this._useTls) {
-            client.set_tls(true);
-        }
-
         this._connection = await client.connect_to_host_async(
             `${this._host}:${this._port}`,
             this._port,
-            this._cancellable
+            this._cancellable,
         );
+
+        if (!this._useStartTls) {
+            await this._handshakeTls();
+        }
 
         this._input = this._connection.get_input_stream();
         this._output = this._connection.get_output_stream();
 
         await this._readResponse();
 
+        if (this._useStartTls) {
+            await this._upgradeToTls();
+        }
+
         await this._login();
+    }
+
+    async _handshakeTls() {
+        const identity = Gio.NetworkAddress.new(this._host, this._port);
+        const tlsConnection = Gio.TlsClientConnection.new(this._connection, identity);
+        // Accept self-signed certificates for localhost (e.g. ProtonMail Bridge)
+        if (this._host === '127.0.0.1' || this._host === 'localhost') {
+            tlsConnection.connect('accept-certificate', () => true);
+        }
+        await tlsConnection.handshake_async(GLib.PRIORITY_DEFAULT, this._cancellable);
+        this._connection = tlsConnection;
+    }
+
+    async _upgradeToTls() {
+        const response = await this._sendCommand('STARTTLS');
+        if (!response.includes('OK')) {
+            throw new Error('STARTTLS failed');
+        }
+        await this._handshakeTls();
+        this._input = this._connection.get_input_stream();
+        this._output = this._connection.get_output_stream();
     }
 
     _quoteString(str) {
@@ -67,7 +92,10 @@ export class ImapClient {
             return [];
         }
 
-        return match[1].trim().split(' ').filter(id => id);
+        return match[1]
+            .trim()
+            .split(' ')
+            .filter((id) => id);
     }
 
     async fetchMessages(messageIds, limit = 10) {
@@ -79,7 +107,7 @@ export class ImapClient {
         const idRange = limited.join(',');
         const response = await this._sendCommand(
             'FETCH',
-            `${idRange} (UID BODY.PEEK[HEADER.FIELDS (FROM SUBJECT MESSAGE-ID)])`
+            `${idRange} (UID BODY.PEEK[HEADER.FIELDS (FROM SUBJECT MESSAGE-ID)])`,
         );
 
         return this._parseMessages(response);
@@ -102,11 +130,7 @@ export class ImapClient {
         const cmd = args ? `${tag} ${command} ${args}\r\n` : `${tag} ${command}\r\n`;
 
         const bytes = new GLib.Bytes(new TextEncoder().encode(cmd));
-        await this._output.write_bytes_async(
-            bytes,
-            GLib.PRIORITY_DEFAULT,
-            this._cancellable
-        );
+        await this._output.write_bytes_async(bytes, GLib.PRIORITY_DEFAULT, this._cancellable);
 
         return await this._readResponse(tag);
     }
@@ -116,7 +140,7 @@ export class ImapClient {
             const bytes = await this._input.read_bytes_async(
                 4096,
                 GLib.PRIORITY_DEFAULT,
-                this._cancellable
+                this._cancellable,
             );
 
             if (bytes.get_size() === 0) {
@@ -126,7 +150,11 @@ export class ImapClient {
             this._buffer += new TextDecoder('utf-8').decode(bytes.get_data());
 
             if (tag) {
-                if (this._buffer.includes(`${tag} OK`) || this._buffer.includes(`${tag} NO`) || this._buffer.includes(`${tag} BAD`)) {
+                if (
+                    this._buffer.includes(`${tag} OK`) ||
+                    this._buffer.includes(`${tag} NO`) ||
+                    this._buffer.includes(`${tag} BAD`)
+                ) {
                     const result = this._buffer;
                     this._buffer = '';
                     return result;
@@ -138,7 +166,6 @@ export class ImapClient {
                     return result;
                 }
             }
-
         }
 
         return this._buffer;
